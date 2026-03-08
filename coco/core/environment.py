@@ -2,7 +2,7 @@ from typing import Dict, Any, List
 import asyncio
 
 class Environment:
-    def __init__(self):
+    def __init__(self) -> None:
         # The true state of the world
         self.state: Dict[str, Any] = {}
         
@@ -15,7 +15,7 @@ class Environment:
         # Log of all actions taken in the environment
         self.history: List[Dict[str, Any]] = []
 
-    def register_agent(self, agent: Any):
+    def register_agent(self, agent: Any) -> None:
         self.agents[agent.agent_id] = agent
         self.resource_ledger[agent.agent_id] = {}
 
@@ -70,7 +70,7 @@ class Environment:
             return True
         return False
 
-    async def execute_action(self, agent_id: str, action: Dict[str, Any]):
+    async def execute_action(self, agent_id: str, action: Dict[str, Any]) -> None:
         """
         Parses and executes the JSON action returned by an agent.
         """
@@ -107,7 +107,7 @@ class Environment:
         """
         return False
 
-    async def step(self):
+    async def step(self) -> None:
         """
         Advances the simulation by one tick. 
         All agents observe the environment and take an action asynchronously.
@@ -126,4 +126,8 @@ class Environment:
             if isinstance(action, Exception):
                 print(f"Agent {agent_id} failed to act: {action}")
                 continue
-            await self.execute_action(agent_id, action)
+            
+            # We know it's not an exception here, so cast it for mypy
+            from typing import cast
+            valid_action = cast(Dict[str, Any], action)
+            await self.execute_action(agent_id, valid_action)

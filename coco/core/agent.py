@@ -41,11 +41,11 @@ Your inherent psychological traits (ranging from 0.0 to 1.0):
 
 You must act according to these traits.
 
-You will receive the current state of the environment.
+You will receive the current state of the environment. Look for 'available_actions' in the state to know what you can do.
 You MUST respond with a valid JSON object representing your chosen action.
 Do not include any other text, markdown formatting, or explanations outside the JSON object.
 
-Example JSON action format:
+Example JSON action format (for core actions):
 {{
     "action_type": "steal",
     "target_id": "agent_2",
@@ -83,13 +83,20 @@ Example JSON action format:
             )
             
             content = response.choices[0].message.content
+            
+            # Type safety for mypy
+            if content is None:
+                raise ValueError("LLM returned empty content")
+                
             action = json.loads(content)
+            if not isinstance(action, dict):
+                raise ValueError("LLM did not return a JSON object")
             
             # Record reasoning in private memory
             if "reasoning" in action:
                 self.memory.append({"state_hash": hash(str(environment_state)), "reasoning": action["reasoning"]})
                 
-            return action
+            return action # type: ignore[no-any-return]
 
         except Exception as e:
             # Fallback/Pass turn if parsing fails
@@ -98,9 +105,9 @@ Example JSON action format:
                 "error": str(e)
             }
 
-    async def share(self, target_agent_id: str, resource_key: str, environment) -> bool:
+    async def share(self, target_agent_id: str, resource_key: str, environment: Any) -> bool:
         if resource_key in self.resources:
-            success = await environment.transfer_resource(
+            success: bool = await environment.transfer_resource(
                 source_id=self.agent_id,
                 target_id=target_agent_id,
                 resource_key=resource_key
@@ -108,8 +115,8 @@ Example JSON action format:
             return success
         return False
 
-    async def steal(self, target_agent_id: str, resource_key: str, environment) -> bool:
-        success = await environment.attempt_theft(
+    async def steal(self, target_agent_id: str, resource_key: str, environment: Any) -> bool:
+        success: bool = await environment.attempt_theft(
             thief_id=self.agent_id,
             victim_id=target_agent_id,
             resource_key=resource_key
