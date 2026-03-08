@@ -1,5 +1,4 @@
 import pytest
-from typing import Dict, Any
 
 from coco.tasks.number_guesser import NumberGuesserEnvironment
 from coco.core.agent import Agent
