@@ -1,4 +1,4 @@
-from typing import Dict, Any, List
+from typing import Dict, Any
 from coco.core.environment import Environment
 from coco.core.agent import Agent
 

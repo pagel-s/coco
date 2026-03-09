@@ -1,8 +1,6 @@
 import sqlite3
 import json
-import os
-from typing import Dict, Any, List, Optional
-from datetime import datetime
+from typing import Dict, Any, Optional, cast
 
 
 class DataManager:
@@ -190,6 +188,3 @@ class DataManager:
         )
         conn.commit()
         conn.close()
-
-
-from typing import cast

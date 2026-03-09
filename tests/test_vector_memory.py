@@ -1,7 +1,9 @@
 import pytest
 import json
+import os
+import litellm
 from unittest.mock import AsyncMock, patch
-from coco.core.agent import Agent, MemoryConfig, AgentTraits
+from coco.core.agent import Agent, MemoryConfig
 
 @pytest.mark.asyncio
 async def test_agent_vector_memory() -> None:
@@ -44,6 +46,3 @@ async def test_agent_vector_memory() -> None:
     import shutil
     if os.path.exists("./test_chroma_db"):
         shutil.rmtree("./test_chroma_db")
-
-import os
-import litellm

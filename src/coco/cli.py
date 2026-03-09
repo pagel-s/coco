@@ -1,6 +1,5 @@
 import typer
 import subprocess
-import sys
 import os
 
 app = typer.Typer(help="CoCo - Collaborate || Compete CLI")

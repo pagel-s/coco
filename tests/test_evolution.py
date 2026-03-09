@@ -1,4 +1,3 @@
-import pytest
 from coco.evolution.engine import EvolutionaryEngine
 from coco.core.environment import Environment
 from coco.core.agent import Agent, AgentTraits

@@ -1,6 +1,4 @@
-import difflib
-import json
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any
 from coco.core.environment import Environment
 from coco.core.agent import Agent
 

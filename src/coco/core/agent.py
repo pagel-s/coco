@@ -1,7 +1,6 @@
 import json
 from typing import Dict, Any, Optional, List
 import litellm
-import os
 
 
 class AgentTraits:
@@ -61,8 +60,6 @@ class Agent:
     def _init_vector_db(self) -> None:
         try:
             import chromadb
-            from chromadb.config import Settings
-
             client = chromadb.PersistentClient(path=self.memory_config.vector_db_path)
             # Collection unique to this agent and generation
             collection_name = f"agent_{self.agent_id}_gen_{self.generation}".replace(

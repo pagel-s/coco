@@ -88,7 +88,6 @@ async def run_simulation() -> None:
     print(f"\n✅ Simulation Complete. Results saved to {db_path}")
 
 def run_simulation_cli() -> None:
-    import asyncio
     asyncio.run(run_simulation())
 
 if __name__ == "__main__":
