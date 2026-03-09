@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Type, Optional
 import random
 
-from coco.core.agent import Agent, AgentTraits
+from coco.core.agent import Agent, AgentTraits, MemoryConfig
 from coco.core.environment import Environment
 
 class EvolutionaryEngine:
@@ -18,7 +18,8 @@ class EvolutionaryEngine:
         mutation_step: float = 0.2,
         model: str = "gpt-3.5-turbo",
         data_manager: Optional[Any] = None,
-        simulation_id: Optional[int] = None
+        simulation_id: Optional[int] = None,
+        memory_config: Optional[MemoryConfig] = None
     ):
         self.environment_class = environment_class
         self.population_size = population_size
@@ -28,6 +29,7 @@ class EvolutionaryEngine:
         self.model = model
         self.data_manager = data_manager
         self.simulation_id = simulation_id
+        self.memory_config = memory_config or MemoryConfig()
         
         self.generation = 0
         self.population: List[Agent] = self._initialize_population()
@@ -46,7 +48,8 @@ class EvolutionaryEngine:
                 agent_id=f"gen_{self.generation}_agent_{i}", 
                 traits=traits, 
                 model=self.model,
-                generation=self.generation
+                generation=self.generation,
+                memory_config=self.memory_config
             )
             population.append(agent)
             
@@ -82,7 +85,8 @@ class EvolutionaryEngine:
             traits=child_traits, 
             model=self.model,
             generation=self.generation + 1,
-            parent_id=parent_a.agent_id
+            parent_id=parent_a.agent_id,
+            memory_config=self.memory_config
         )
 
     def evolve(self) -> None:
