@@ -1,5 +1,5 @@
-from typing import List, Dict, Any, Type, Optional
 import random
+from typing import Any, Dict, List, Optional, Type
 
 from coco.core.agent import Agent, AgentTraits, MemoryConfig
 from coco.core.environment import Environment

@@ -1,6 +1,6 @@
-import sqlite3
 import json
-from typing import Dict, Any, Optional, cast
+import sqlite3
+from typing import Any, Dict, Optional, cast
 
 
 class DataManager:

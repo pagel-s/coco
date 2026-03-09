@@ -1,12 +1,13 @@
-import streamlit as st
+import json
+import os
 import sqlite3
+from typing import Tuple
+
+import networkx as nx  # type: ignore
 import pandas as pd  # type: ignore
 import plotly.express as px  # type: ignore
 import plotly.graph_objects as go  # type: ignore
-import networkx as nx  # type: ignore
-import json
-import os
-from typing import Tuple
+import streamlit as st
 
 st.set_page_config(page_title="CoCo - Analysis Dashboard", layout="wide")
 

@@ -1,6 +1,8 @@
-import typer
-import subprocess
+import asyncio
 import os
+import subprocess
+
+import typer
 
 app = typer.Typer(help="CoCo - Collaborate || Compete CLI")
 
@@ -8,10 +10,9 @@ app = typer.Typer(help="CoCo - Collaborate || Compete CLI")
 @app.command()
 def sim() -> None:
     """Run the default Token Heist evolutionary simulation."""
-    from examples.run_evolution_token_heist import run_simulation
-    import asyncio
+    from coco.tasks.runners import run_token_heist_evolution
 
-    asyncio.run(run_simulation())
+    asyncio.run(run_token_heist_evolution())
 
 
 @app.command()
@@ -23,10 +24,9 @@ def dashboard() -> None:
 @app.command()
 def codefix() -> None:
     """Run the Collaborative Code Fix example."""
-    from examples.run_code_fix import main
-    import asyncio
+    from coco.tasks.runners import run_code_fix_example
 
-    asyncio.run(main())
+    asyncio.run(run_code_fix_example())
 
 
 def run_dashboard() -> None:
@@ -37,7 +37,10 @@ def run_dashboard() -> None:
 
     print(f"🚀 Launching dashboard from {app_path}...")
     try:
-        subprocess.run(["streamlit", "run", app_path], check=True)
+        # Use sys.executable to ensure we use the same python environment
+        import sys
+
+        subprocess.run([sys.executable, "-m", "streamlit", "run", app_path], check=True)
     except KeyboardInterrupt:
         print("\n👋 Dashboard stopped.")
     except Exception as e:

@@ -1,6 +1,7 @@
-from typing import Dict, Any
-from coco.core.environment import Environment
+from typing import Any, Dict
+
 from coco.core.agent import Agent
+from coco.core.environment import Environment
 
 
 class CodeFixEnvironment(Environment):
