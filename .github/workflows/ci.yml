@@ -33,7 +33,7 @@ jobs:
         
     - name: Type checking with mypy
       run: |
-        uv run mypy coco/
+        uv run mypy src/
         
     - name: Test with pytest and verify coverage
       run: |

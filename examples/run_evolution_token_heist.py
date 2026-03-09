@@ -1,22 +1,23 @@
 import asyncio
 import os
 import sys
+from typing import Dict, Any
 
 # Ensure coco is in the python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from coco.core.database import DataManager
 from coco.evolution.engine import EvolutionaryEngine
 from coco.tasks.token_heist import TokenHeistEnvironment
 
-async def run_simulation():
+async def run_simulation() -> None:
     db_path = "token_heist_results.db"
     if os.path.exists(db_path):
         os.remove(db_path)
         
     db = DataManager(db_path)
     
-    sim_config = {
+    sim_config: Dict[str, Any] = {
         "task": "Token Heist",
         "population_size": 4,
         "generations": 3,
@@ -86,7 +87,7 @@ async def run_simulation():
 
     print(f"\n✅ Simulation Complete. Results saved to {db_path}")
 
-def run_simulation_cli():
+def run_simulation_cli() -> None:
     import asyncio
     asyncio.run(run_simulation())
 

@@ -3,12 +3,12 @@ import os
 import sys
 
 # Ensure coco is in the python path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
 from coco.core.agent import Agent, AgentTraits
 from coco.tasks.token_heist import TokenHeistEnvironment
 
-async def main():
+async def main() -> None:
     print("🏦 Initializing The Token Heist...")
     # 2 starting tokens, cost 1 token per turn to survive. 
     # Max survival without stealing/sharing is 2 turns.

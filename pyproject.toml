@@ -38,6 +38,9 @@ dev = [
     "black>=23.0"
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = "-ra -q --cov=coco --cov-report=term-missing --cov-fail-under=80"
@@ -47,9 +50,11 @@ testpaths = [
 asyncio_mode = "auto"
 
 [tool.coverage.run]
+source = ["coco"]
 omit = [
-    "coco/analysis/*",
-    "coco/core/database.py"
+    "src/coco/analysis/*",
+    "src/coco/core/database.py",
+    "src/coco/cli.py"
 ]
 
 [tool.ruff]
@@ -61,3 +66,4 @@ python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+mypy_path = "src"
