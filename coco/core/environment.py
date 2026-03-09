@@ -1,8 +1,8 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import asyncio
 
 class Environment:
-    def __init__(self) -> None:
+    def __init__(self, data_manager: Optional[Any] = None, simulation_id: Optional[int] = None) -> None:
         # The true state of the world
         self.state: Dict[str, Any] = {}
         
@@ -15,16 +15,20 @@ class Environment:
         # Log of all actions taken in the environment
         self.history: List[Dict[str, Any]] = []
 
+        # SQLite logging
+        self.data_manager = data_manager
+        self.simulation_id = simulation_id
+        self.current_turn_id: Optional[int] = None
+
     def register_agent(self, agent: Any) -> None:
         self.agents[agent.agent_id] = agent
         self.resource_ledger[agent.agent_id] = {}
+        
+        # Log agent to database if manager is present
+        if self.data_manager and self.simulation_id is not None:
+            self.data_manager.log_agent(self.simulation_id, agent)
 
     def get_agent_view(self, agent_id: str) -> Dict[str, Any]:
-        """
-        Returns the subset of the environment state visible to a specific agent.
-        For now, we return the full state, but this can be restricted later 
-        (e.g. fog of war).
-        """
         return {
             "global_state": self.state,
             "other_agents": [aid for aid in self.agents.keys() if aid != agent_id]
@@ -56,7 +60,6 @@ class Environment:
             return False
 
         import random
-        # TODO: integrate traits (thief aggression vs victim trust/defense)
         success = random.random() > 0.5
         
         if success:
@@ -71,9 +74,6 @@ class Environment:
         return False
 
     async def execute_action(self, agent_id: str, action: Dict[str, Any]) -> None:
-        """
-        Parses and executes the JSON action returned by an agent.
-        """
         action_type = action.get("action_type")
         success = False
         
@@ -92,7 +92,6 @@ class Environment:
         elif action_type == "pass":
             success = True
         else:
-            # Delegate task-specific actions to a subclass or task handler
             success = await self.handle_custom_action(agent_id, action)
 
         self.history.append({
@@ -101,33 +100,48 @@ class Environment:
             "success": success
         })
 
+        if self.data_manager and self.current_turn_id is not None:
+            self.data_manager.log_interaction(self.current_turn_id, agent_id, action, success)
+            self.data_manager.log_agent_snapshot(self.current_turn_id, self.agents[agent_id])
+
     async def handle_custom_action(self, agent_id: str, action: Dict[str, Any]) -> bool:
-        """
-        To be overridden by specific Task environments (e.g. 'guess_number', 'write_code').
-        """
         return False
 
-    async def step(self) -> None:
-        """
-        Advances the simulation by one tick. 
-        All agents observe the environment and take an action asynchronously.
-        """
+    def _pre_step(self) -> None:
+        """Internal hook to log the start of the turn."""
+        if self.data_manager and self.simulation_id is not None:
+            generation = getattr(self, "generation", 0)
+            turn_number = getattr(self, "turn_number", 0)
+            self.current_turn_id = self.data_manager.log_turn(
+                self.simulation_id, generation, turn_number, self.state
+            )
+
+    async def _run_agent_actions(self, agent_ids: List[str]) -> None:
+        """Prompts all active agents and executes their choices."""
         tasks = []
-        for agent_id, agent in self.agents.items():
+        for agent_id in agent_ids:
+            agent = self.agents[agent_id]
             view = self.get_agent_view(agent_id)
-            # Ask the agent to decide on an action
             tasks.append(agent.act(view))
         
-        # Gather all actions (Agents "think" in parallel)
         actions = await asyncio.gather(*tasks, return_exceptions=True)
         
-        # Execute the actions sequentially to prevent race conditions on the ledger
-        for agent_id, action in zip(self.agents.keys(), actions):
+        from typing import cast
+        for agent_id, action in zip(agent_ids, actions):
             if isinstance(action, Exception):
                 print(f"Agent {agent_id} failed to act: {action}")
                 continue
             
-            # We know it's not an exception here, so cast it for mypy
-            from typing import cast
             valid_action = cast(Dict[str, Any], action)
             await self.execute_action(agent_id, valid_action)
+
+    def _post_step(self) -> None:
+        """Optional hook for environment-specific cleanup/rules."""
+        pass
+
+    async def step(self) -> None:
+        """The standard step workflow."""
+        self._pre_step()
+        # By default, all registered agents are active
+        await self._run_agent_actions(list(self.agents.keys()))
+        self._post_step()

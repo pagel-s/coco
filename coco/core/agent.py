@@ -18,11 +18,15 @@ class Agent:
         self, 
         agent_id: str, 
         traits: Optional[AgentTraits] = None,
-        model: str = "gpt-3.5-turbo"
+        model: str = "gpt-3.5-turbo",
+        generation: int = 0,
+        parent_id: Optional[str] = None
     ):
         self.agent_id = agent_id
         self.traits = traits or AgentTraits()
         self.model = model
+        self.generation = generation
+        self.parent_id = parent_id
         
         self.resources: Dict[str, Any] = {}
         self.memory: list = []
