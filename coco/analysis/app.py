@@ -1,15 +1,16 @@
 import streamlit as st
 import sqlite3
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-import networkx as nx
+import pandas as pd # type: ignore
+import plotly.express as px # type: ignore
+import plotly.graph_objects as go # type: ignore
+import networkx as nx # type: ignore
 import json
 import os
+from typing import Tuple
 
 st.set_page_config(page_title="CoCo - Analysis Dashboard", layout="wide")
 
-def load_data(db_path: str):
+def load_data(db_path: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     conn = sqlite3.connect(db_path)
     
     # Load all tables into DataFrames
@@ -22,7 +23,7 @@ def load_data(db_path: str):
     conn.close()
     return simulations, agents, turns, interactions, snapshots
 
-def main():
+def main() -> None:
     st.title("Collaborate || Compete (CoCo) - Interaction Analysis")
     
     db_files = [f for f in os.listdir('.') if f.endswith('.db')]

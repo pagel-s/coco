@@ -39,6 +39,12 @@ testpaths = [
 ]
 asyncio_mode = "auto"
 
+[tool.coverage.run]
+omit = [
+    "coco/analysis/*",
+    "coco/core/database.py"
+]
+
 [tool.ruff]
 line-length = 88
 target-version = "py310"

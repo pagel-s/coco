@@ -104,11 +104,11 @@ class CodeFixEnvironment(Environment):
                 return True
                 
         elif action_type == "share_snippet":
-            method_id = action.get("method_id")
+            method_id = action.get("method_id", "")
             fix_code = action.get("fix_code", "")
             
             # Verify if the fix is actually correct before sharing it
-            if self._normalize_code(fix_code) == self._normalize_code(self.correct_versions.get(method_id, "")):
+            if self._normalize_code(fix_code) == self._normalize_code(self.correct_versions.get(str(method_id), "")):
                 self.state["public_snippets"][method_id] = fix_code
                 # Reward for sharing
                 agent.fitness += 20.0
