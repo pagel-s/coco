@@ -10,71 +10,75 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
 </p>
 
-**CoCo** is an agentic LLM framework designed for agent-based optimization of arbitrary objectives. In this framework, a set of AI agents dynamically evolve and interact within an environment, choosing to either **collaborate** together towards a shared goal or **compete** (and even steal resources/information) for individual fitness.
-
-Inspired by projects like OpenClaw, CoCo provides a generalized sandbox for emergent, Darwinian behavior among LLM-driven agents.
+**CoCo** is a professional-grade agentic LLM framework designed for the evolutionary optimization of arbitrary objectives. It provides a sandbox where agents dynamically choose between collaboration and competition, evolving their behavioral traits over generations.
 
 ## Highlights
 
-- **Dynamic Social Interaction** — Agents can form alliances, share contexts, trade resources, or betray each other.
-- **Theft & Sabotage Mechanics** — Robust environment-level enforcement of stealing resources (compute tokens, hints, data fragments) to reward cunning strategies.
-- **Evolutionary Loop** — Agents mutate over generations based on a fitness function. Successful traits (trust levels, collaboration thresholds, aggression) and prompts are passed down and modified.
-- **Model-Agnostic** — Powered by `litellm`, allowing agents to be powered by OpenAI, Anthropic, local models, or a mixture of different models in the same environment.
-- **Asynchronous Engine** — Fully `asyncio` driven, allowing for real-time, non-turn-based agent interactions where speed can be a competitive advantage.
+- **Dynamic Social Interaction** — Agents form alliances, share contexts, trade resources, or betray each other.
+- **Theft & Sabotage Mechanics** — Environment-level enforcement of stealing resources (tokens, snippets) to reward cunning strategies.
+- **Evolutionary Loop** — Agents mutate over generations based on task-specific fitness functions.
+- **Associative Memory** — Two-tier memory system including Working Memory and Long-term Associative Memory powered by VectorDB (ChromaDB).
+- **Model-Agnostic** — Powered by `litellm`, supporting OpenAI, Anthropic, Ollama, and more.
+- **Asynchronous Engine** — Fully `asyncio` driven for real-time, non-turn-based agent interactions.
 
-## How it works
+## Core Architecture
 
-1. **The Environment (The Arena)**: Acts as the source of truth, managing the state, defining tasks, and serving as an un-cheatable ledger for resources.
-2. **The Agents**: Each agent possesses:
-    - **LLM Core**: For reasoning and decision-making.
-    - **Traits**: Inherent thresholds (e.g., `trust_level`, `aggression_threshold`) that mutate across generations.
-    - **Action Space**: Capable of interacting with the world (reading files, executing code) and other agents (sharing, stealing, messaging).
-3. **The Evolutionary Engine**: Evaluates agents based on their success at tasks, culling underperformers and generating new offspring by crossing over and mutating the traits of top performers.
+1. **The Environment**: The un-cheatable "physics engine" managing the state and resource ledger.
+2. **The Agents**: Autonomous reasoning nodes with mutable genomes (collaboration, aggression, trust).
+3. **The Evolutionary Engine**: Manages the Darwinian loop (Selection, Crossover, Mutation).
+4. **Analysis Layer**: Automatic SQLite logging of every turn, interaction, and reasoning trace.
 
-## Install (recommended)
+## Install
 
-Runtime: **Python ≥3.10**.
+Runtime: **Python ≥3.10**. Recommended management via `uv`.
 
 ```bash
 git clone https://github.com/pagel-s/coco.git
 cd coco
 
-# Install dependencies
-pip install -e .
+# Install package and dependencies
+uv pip install -e .
 ```
 
-To install development dependencies (for running tests, linting, etc.):
+To install development dependencies (testing, linting):
 
 ```bash
-pip install -e .[dev]
+uv pip install -e .[dev]
 ```
 
-## Quick start
+## Quick Start (CLI)
 
-*Coming soon. We are actively developing the first scenario.*
-
-The initial testbed will focus on a resource-constrained optimization task, where agents must decide whether to pool their limited tokens to solve a complex coding task together, or steal tokens from others to complete it solo.
-
-## Development & CI/CD
-
-CoCo enforces high-quality engineering standards:
-- **Type Hinting**: Checked via `mypy`.
-- **Linting/Formatting**: Checked via `ruff`.
-- **Testing**: Comprehensive test suite run via `pytest`.
-
-To run the full suite locally:
+CoCo provides easy-to-use CLI entry points:
 
 ```bash
-ruff check .
-mypy coco/
-pytest tests/
+# Run the default evolutionary Token Heist simulation
+coco sim
+
+# Run the Collaborative Code Fix task
+coco codefix
+
+# Launch the interactive analysis dashboard
+coco dashboard
 ```
 
-We utilize GitHub Actions for our CI/CD pipeline, automatically validating all pull requests and merges to `main`.
+## Benchmarks
 
-## Contributing
+- **The Token Heist**: A zero-sum survival scenario where agents must manage limited tokens.
+- **Collaborative Code Fix**: Agents must fix buggy Python methods by sharing or stealing code snippets.
 
-Contributions, issues, and feature requests are welcome. Feel free to check the issues page.
+## Analysis Dashboard
+
+View results in a high-quality Streamlit UI:
+- Visualized Social Network Graphs (who stole from whom).
+- Trait Evolution charts across generations.
+- Deep-dive into raw LLM reasoning and private memories.
+
+## Engineering Standards
+
+- **Type Hinting**: 100% strict `mypy` compliance.
+- **Testing**: ~90% unit test coverage with `pytest`.
+- **CI/CD**: Fully automated via GitHub Actions.
+- **Linter**: Blazing fast enforcement with `ruff`.
 
 ## License
 
