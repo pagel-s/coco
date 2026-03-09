@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/pagel-s/coco/actions/workflows/ci.yml?branch=main"><img src="https://img.shields.io/github/actions/workflow/status/pagel-s/coco/ci.yml?branch=main&style=for-the-badge" alt="CI status"></a>
-  <a href="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg?style=for-the-badge"><img src="https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg?style=for-the-badge" alt="Python Version"></a>
+  <a href="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg?style=for-the-badge"><img src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg?style=for-the-badge" alt="Python Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
 </p>
 
@@ -30,7 +30,7 @@
 
 ## Install
 
-Runtime: **Python ≥3.10**. Recommended management via `uv`.
+Runtime: **Python ≥3.11**. Recommended management via `uv`.
 
 ```bash
 git clone https://github.com/pagel-s/coco.git
