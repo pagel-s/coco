@@ -149,3 +149,6 @@ cython_debug/
 # Simulation databases
 *.db
 *.db-journal
+
+# Generated API documentation
+docs/api/
