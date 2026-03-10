@@ -331,3 +331,69 @@ class DataManager:
                     )
         except sqlite3.Error as e:
             raise RuntimeError(f"Failed to log agent snapshot: {e}") from e
+
+    def get_simulation_logs(self, sim_id: int) -> Dict[str, Any]:
+        """Retrieves all logs for a specific simulation.
+
+        Args:
+            sim_id (int): The ID of the simulation to retrieve logs for.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing all simulation data, 
+                including agents, turns, and interactions.
+
+        Raises:
+            ValueError: If sim_id is invalid.
+            RuntimeError: If the database query fails.
+        """
+        if sim_id < 1:
+            raise ValueError("sim_id must be a positive integer.")
+
+        try:
+            with closing(sqlite3.connect(self.db_path)) as conn:
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+
+                # Get simulation metadata
+                cursor.execute(
+                    "SELECT * FROM simulations WHERE simulation_id = ?", (sim_id,)
+                )
+                sim_row = cursor.fetchone()
+                if not sim_row:
+                    return {}
+
+                logs: Dict[str, Any] = {
+                    "simulation": dict(sim_row),
+                    "agents": [],
+                    "turns": [],
+                }
+
+                # Get agents
+                cursor.execute("SELECT * FROM agents WHERE simulation_id = ?", (sim_id,))
+                logs["agents"] = [dict(row) for row in cursor.fetchall()]
+
+                # Get turns and their interactions/snapshots
+                cursor.execute("SELECT * FROM turns WHERE simulation_id = ?", (sim_id,))
+                turn_rows = cursor.fetchall()
+
+                for t_row in turn_rows:
+                    turn_id = t_row["turn_id"]
+                    turn_data = dict(t_row)
+
+                    # Get interactions for this turn
+                    cursor.execute(
+                        "SELECT * FROM interactions WHERE turn_id = ?", (turn_id,)
+                    )
+                    turn_data["interactions"] = [dict(i_row) for i_row in cursor.fetchall()]
+
+                    # Get snapshots for this turn
+                    cursor.execute(
+                        "SELECT * FROM agent_snapshots WHERE turn_id = ?", (turn_id,)
+                    )
+                    turn_data["snapshots"] = [dict(s_row) for s_row in cursor.fetchall()]
+
+                    logs["turns"].append(turn_data)
+
+                return logs
+        except sqlite3.Error as e:
+            raise RuntimeError(f"Failed to retrieve simulation logs: {e}") from e

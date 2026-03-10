@@ -118,23 +118,24 @@ def test_log_interaction(manager):
     conn.close()
 
 
-def test_log_agent_snapshot(manager):
-    sim_id = manager.create_simulation({})
-    turn_id = manager.log_turn(sim_id, 0, 1, {})
+def test_get_simulation_logs(manager):
+    sim_id = manager.create_simulation({"task": "test"})
+    
     agent = Agent("test_agent")
-    agent.resources = {"gold": 50}
-    agent.fitness = 100.0
-
+    manager.log_agent(sim_id, agent)
+    
+    turn_id = manager.log_turn(sim_id, 0, 1, {"env": "state"})
+    manager.log_interaction(turn_id, "test_agent", {"action_type": "move"}, True)
     manager.log_agent_snapshot(turn_id, agent)
-
-    conn = sqlite3.connect(manager.db_path)
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT agent_id, resources_json, fitness FROM agent_snapshots WHERE turn_id = ?",
-        (turn_id,),
-    )
-    row = cursor.fetchone()
-    assert row[0] == "test_agent"
-    assert '"gold": 50' in row[1]
-    assert row[2] == 100.0
-    conn.close()
+    
+    logs = manager.get_simulation_logs(sim_id)
+    
+    assert logs["simulation"]["simulation_id"] == sim_id
+    assert len(logs["agents"]) == 1
+    assert logs["agents"][0]["agent_id"] == "test_agent"
+    assert len(logs["turns"]) == 1
+    assert logs["turns"][0]["turn_number"] == 1
+    assert len(logs["turns"][0]["interactions"]) == 1
+    assert logs["turns"][0]["interactions"][0]["interaction_type"] == "move"
+    assert len(logs["turns"][0]["snapshots"]) == 1
+    assert logs["turns"][0]["snapshots"][0]["agent_id"] == "test_agent"

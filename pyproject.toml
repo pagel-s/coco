@@ -20,7 +20,8 @@ dependencies = [
     "plotly>=5.18.0",
     "networkx>=3.0",
     "chromadb>=0.4.0",
-    "typer>=0.9.0"
+    "typer>=0.9.0",
+    "rich>=14.3.3",
 ]
 
 [project.scripts]
