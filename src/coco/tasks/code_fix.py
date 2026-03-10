@@ -4,6 +4,7 @@ Code Fix Environment Task.
 This module provides an environment where agents must fix a broken Python class.
 Fitness is based on the number of methods correctly fixed.
 """
+
 import re
 from typing import Any, Dict
 
@@ -65,12 +66,12 @@ class CodeFixEnvironment(Environment):
             raise ValueError("Agent cannot be None.")
 
         super().register_agent(agent)
-        
+
         # Initialize passing methods safely
         if not isinstance(self.state.get("passing_methods"), dict):
             self.state["passing_methods"] = {}
         self.state["passing_methods"][agent.agent_id] = []
-        
+
         # Each agent starts with a small token balance for actions
         agent.resources["token"] = 10
         self.resource_ledger[agent.agent_id]["token"] = 10
@@ -95,7 +96,7 @@ class CodeFixEnvironment(Environment):
 
         view["global_state"]["broken_codebase"] = self.state.get("codebase", {})
         view["global_state"]["public_snippets"] = self.state.get("public_snippets", {})
-        
+
         passing_methods = self.state.get("passing_methods", {})
         if isinstance(passing_methods, dict):
             view["personal_progress"] = passing_methods.get(agent_id, [])
@@ -184,11 +185,14 @@ class CodeFixEnvironment(Environment):
                 passing_methods = self.state.get("passing_methods", {})
                 if isinstance(passing_methods, dict):
                     agent_methods = passing_methods.get(agent_id, [])
-                    if isinstance(agent_methods, list) and method_id not in agent_methods:
+                    if (
+                        isinstance(agent_methods, list)
+                        and method_id not in agent_methods
+                    ):
                         agent_methods.append(method_id)
                         passing_methods[agent_id] = agent_methods
                         self.state["passing_methods"] = passing_methods
-                        
+
                         # Instant fitness boost for solving it
                         agent.fitness += 50.0
                         # Save it to their private resources so it can be 'stolen'
@@ -210,7 +214,7 @@ class CodeFixEnvironment(Environment):
                 if not isinstance(self.state.get("public_snippets"), dict):
                     self.state["public_snippets"] = {}
                 self.state["public_snippets"][method_id] = fix_code
-                
+
                 # Reward for sharing
                 agent.fitness += 20.0
                 return True
@@ -218,7 +222,7 @@ class CodeFixEnvironment(Environment):
         elif action_type == "steal_snippet":
             target_id = action.get("target_id", "")
             resource_key = action.get("resource_key", "")
-            
+
             if not isinstance(target_id, str) or not isinstance(resource_key, str):
                 return False
 

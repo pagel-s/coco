@@ -1,7 +1,8 @@
 """Module containing the core Environment implementation."""
+
 import asyncio
 import random
-from typing import Any, Dict, List, Optional, cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
 if TYPE_CHECKING:
     from coco.core.agent import Agent
@@ -32,7 +33,7 @@ class Environment:
             simulation_id: Optional numerical ID for tracking simulations.
         """
         self.state: Dict[str, Any] = {}
-        self.agents: Dict[str, 'Agent'] = {}
+        self.agents: Dict[str, "Agent"] = {}
         self.resource_ledger: Dict[str, Dict[str, Any]] = {}
         self.history: List[Dict[str, Any]] = []
 
@@ -40,7 +41,7 @@ class Environment:
         self.simulation_id = simulation_id
         self.current_turn_id: Optional[int] = None
 
-    def register_agent(self, agent: 'Agent') -> None:
+    def register_agent(self, agent: "Agent") -> None:
         """Registers a new agent into the environment.
 
         Args:

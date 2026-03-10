@@ -1,12 +1,13 @@
 """Module for managing local SQLite database logging.
 
-This module provides the DataManager class, which handles tracking 
+This module provides the DataManager class, which handles tracking
 simulations, agents, turns, interactions, and agent snapshots over time.
 """
+
 import json
 import sqlite3
 from contextlib import closing
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 if TYPE_CHECKING:
     from coco.core.agent import Agent
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 class DataManager:
     """Manages a local SQLite database for logging simulation data.
 
-    This includes tracking agent interactions, evolutionary lineages, 
+    This includes tracking agent interactions, evolutionary lineages,
     and cognitive traces over time.
 
     Attributes:
@@ -39,7 +40,7 @@ class DataManager:
     def _initialize_db(self) -> None:
         """Sets up the SQLite schema for the simulation.
 
-        Creates the necessary tables (simulations, agents, turns, interactions, 
+        Creates the necessary tables (simulations, agents, turns, interactions,
         agent_snapshots) if they do not already exist.
 
         Raises:
@@ -161,7 +162,7 @@ class DataManager:
             raise RuntimeError(f"Failed to create simulation: {e}") from e
 
     def log_agent(
-        self, sim_id: int, agent: 'Agent', parent_id: Optional[str] = None
+        self, sim_id: int, agent: "Agent", parent_id: Optional[str] = None
     ) -> None:
         """Logs an agent's existence and initial traits into the database.
 
@@ -294,7 +295,7 @@ class DataManager:
         except sqlite3.Error as e:
             raise RuntimeError(f"Failed to log interaction: {e}") from e
 
-    def log_agent_snapshot(self, turn_id: int, agent: 'Agent') -> None:
+    def log_agent_snapshot(self, turn_id: int, agent: "Agent") -> None:
         """Logs a snapshot of an agent's private state for a given turn.
 
         Args:
@@ -339,7 +340,7 @@ class DataManager:
             sim_id (int): The ID of the simulation to retrieve logs for.
 
         Returns:
-            Dict[str, Any]: A dictionary containing all simulation data, 
+            Dict[str, Any]: A dictionary containing all simulation data,
                 including agents, turns, and interactions.
 
         Raises:
@@ -369,7 +370,9 @@ class DataManager:
                 }
 
                 # Get agents
-                cursor.execute("SELECT * FROM agents WHERE simulation_id = ?", (sim_id,))
+                cursor.execute(
+                    "SELECT * FROM agents WHERE simulation_id = ?", (sim_id,)
+                )
                 logs["agents"] = [dict(row) for row in cursor.fetchall()]
 
                 # Get turns and their interactions/snapshots
@@ -384,13 +387,17 @@ class DataManager:
                     cursor.execute(
                         "SELECT * FROM interactions WHERE turn_id = ?", (turn_id,)
                     )
-                    turn_data["interactions"] = [dict(i_row) for i_row in cursor.fetchall()]
+                    turn_data["interactions"] = [
+                        dict(i_row) for i_row in cursor.fetchall()
+                    ]
 
                     # Get snapshots for this turn
                     cursor.execute(
                         "SELECT * FROM agent_snapshots WHERE turn_id = ?", (turn_id,)
                     )
-                    turn_data["snapshots"] = [dict(s_row) for s_row in cursor.fetchall()]
+                    turn_data["snapshots"] = [
+                        dict(s_row) for s_row in cursor.fetchall()
+                    ]
 
                     logs["turns"].append(turn_data)
 

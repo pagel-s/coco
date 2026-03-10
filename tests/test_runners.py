@@ -83,8 +83,15 @@ async def test_run_code_fix_example_with_actions(mock_agent, mock_env):
     mock_env_instance.state = {"passing_methods": {"The_Coder": 1}}
     # Simulate history with actions
     mock_env_instance.history = [
-        {"agent_id": "The_Coder", "action": {"action_type": "propose_fix", "method_id": "m1"}},
-        {"agent_id": "Script_Kiddie", "action": {"action_type": "steal_snippet", "target_id": "The_Coder"}, "success": True}
+        {
+            "agent_id": "The_Coder",
+            "action": {"action_type": "propose_fix", "method_id": "m1"},
+        },
+        {
+            "agent_id": "Script_Kiddie",
+            "action": {"action_type": "steal_snippet", "target_id": "The_Coder"},
+            "success": True,
+        },
     ]
     mock_env_instance.step = AsyncMock()
     mock_env.return_value = mock_env_instance

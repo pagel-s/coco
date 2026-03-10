@@ -120,16 +120,16 @@ def test_log_interaction(manager):
 
 def test_get_simulation_logs(manager):
     sim_id = manager.create_simulation({"task": "test"})
-    
+
     agent = Agent("test_agent")
     manager.log_agent(sim_id, agent)
-    
+
     turn_id = manager.log_turn(sim_id, 0, 1, {"env": "state"})
     manager.log_interaction(turn_id, "test_agent", {"action_type": "move"}, True)
     manager.log_agent_snapshot(turn_id, agent)
-    
+
     logs = manager.get_simulation_logs(sim_id)
-    
+
     assert logs["simulation"]["simulation_id"] == sim_id
     assert len(logs["agents"]) == 1
     assert logs["agents"][0]["agent_id"] == "test_agent"

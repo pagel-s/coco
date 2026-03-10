@@ -4,6 +4,7 @@ Runner module for various tasks.
 This module provides runner functions to execute the tasks like
 Token Heist and Code Fix.
 """
+
 import os
 from typing import Any, Dict
 
@@ -17,16 +18,23 @@ from coco.tasks.token_heist import TokenHeistEnvironment
 async def run_token_heist_evolution(export_json: bool = False) -> None:
     """
     Run the default evolutionary Token Heist simulation.
-    
+
     This function sets up the database, configures the evolutionary engine,
     and runs the simulation for a configured number of generations.
-    
+
     Args:
         export_json: If True, exports the simulation logs to a JSON file.
     """
     import json
+
     from rich.console import Console
-    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+    from rich.progress import (
+        BarColumn,
+        Progress,
+        SpinnerColumn,
+        TaskProgressColumn,
+        TextColumn,
+    )
     from rich.table import Table
 
     console = Console()
@@ -35,7 +43,9 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
         try:
             os.remove(db_path)
         except OSError as e:
-            console.print(f"[red]Failed to remove existing database {db_path}: {e}[/red]")
+            console.print(
+                f"[red]Failed to remove existing database {db_path}: {e}[/red]"
+            )
             return
 
     db = DataManager(db_path)
@@ -48,14 +58,16 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
         "starting_tokens": 3,
         "consumption_rate": 1,
     }
-    
+
     try:
         sim_id = db.create_simulation(sim_config)
     except Exception as e:
         console.print(f"[red]Failed to create simulation: {e}[/red]")
         return
 
-    console.print(f"🚀 [bold green]Starting Evolution Simulation[/bold green] (ID: {sim_id})")
+    console.print(
+        f"🚀 [bold green]Starting Evolution Simulation[/bold green] (ID: {sim_id})"
+    )
 
     try:
         engine = EvolutionaryEngine(
@@ -77,10 +89,14 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
         TaskProgressColumn(),
         console=console,
     ) as progress:
-        gen_task = progress.add_task("[cyan]Generations", total=sim_config["generations"])
-        
+        gen_task = progress.add_task(
+            "[cyan]Generations", total=sim_config["generations"]
+        )
+
         for gen in range(sim_config["generations"]):
-            turn_task = progress.add_task(f"  [yellow]Gen {gen} Turns", total=sim_config["turns_per_gen"])
+            turn_task = progress.add_task(
+                f"  [yellow]Gen {gen} Turns", total=sim_config["turns_per_gen"]
+            )
 
             env = TokenHeistEnvironment(
                 starting_tokens=sim_config["starting_tokens"],
@@ -101,11 +117,13 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
                     break
 
                 progress.update(turn_task, advance=1)
-                
+
                 dead_agents = env.state.get("dead_agents", [])
-                if isinstance(dead_agents, list) and len(dead_agents) == len(engine.population):
+                if isinstance(dead_agents, list) and len(dead_agents) == len(
+                    engine.population
+                ):
                     break
-            
+
             progress.remove_task(turn_task)
 
             # Calculate and log fitness
@@ -118,7 +136,7 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
             for agent in engine.population:
                 survived_turns = sim_config["turns_per_gen"]
                 is_dead = False
-                
+
                 dead_agents = env.state.get("dead_agents", [])
                 if isinstance(dead_agents, list) and agent.agent_id in dead_agents:
                     is_dead = True
@@ -131,10 +149,10 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
 
                 agent.fitness = float(survived_turns + agent.resources.get("token", 0))
                 summary_table.add_row(
-                    agent.agent_id, 
-                    f"{agent.fitness:.1f}", 
-                    str(agent.resources.get('token', 0)),
-                    "[red]DEAD[/red]" if is_dead else "[green]ALIVE[/green]"
+                    agent.agent_id,
+                    f"{agent.fitness:.1f}",
+                    str(agent.resources.get("token", 0)),
+                    "[red]DEAD[/red]" if is_dead else "[green]ALIVE[/green]",
                 )
 
             console.print(summary_table)
@@ -143,12 +161,16 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
                 try:
                     engine.evolve()
                 except Exception as e:
-                    console.print(f"[red]Evolution failed at generation {gen}: {e}[/red]")
+                    console.print(
+                        f"[red]Evolution failed at generation {gen}: {e}[/red]"
+                    )
                     break
-            
+
             progress.update(gen_task, advance=1)
 
-    console.print(f"\n✅ [bold green]Simulation Complete.[/bold green] Results saved to [blue]{db_path}[/blue]")
+    console.print(
+        f"\n✅ [bold green]Simulation Complete.[/bold green] Results saved to [blue]{db_path}[/blue]"
+    )
 
     if export_json:
         try:
@@ -164,7 +186,7 @@ async def run_token_heist_evolution(export_json: bool = False) -> None:
 async def run_code_fix_example() -> None:
     """
     Run the Collaborative Code Fix example.
-    
+
     Sets up two agents, 'The_Coder' and 'Script_Kiddie', with different traits,
     and runs them in a collaborative code fixing environment for a set number of turns.
     """
@@ -173,7 +195,9 @@ async def run_code_fix_example() -> None:
     from rich.tree import Tree
 
     console = Console()
-    console.print(Panel("💻 [bold cyan]Initializing Collaborative Code Fixing[/bold cyan]"))
+    console.print(
+        Panel("💻 [bold cyan]Initializing Collaborative Code Fixing[/bold cyan]")
+    )
     env = CodeFixEnvironment()
 
     coder_traits = AgentTraits(
@@ -206,17 +230,21 @@ async def run_code_fix_example() -> None:
             agent_id = action.get("agent_id")
             act = action.get("action", {})
             action_type = act.get("action_type")
-            
+
             tree = Tree(f"[cyan]{agent_id}[/cyan] chose [bold]{action_type}[/bold]")
             if action_type == "propose_fix":
                 tree.add(f"Method: [green]{act.get('method_id')}[/green]")
             elif action_type == "steal_snippet":
-                tree.add(f"Target: [magenta]{act.get('target_id')}[/magenta] | Success: {'[green]YES[/green]' if action.get('success') else '[red]NO[/red]'}")
-            
+                tree.add(
+                    f"Target: [magenta]{act.get('target_id')}[/magenta] | Success: {'[green]YES[/green]' if action.get('success') else '[red]NO[/red]'}"
+                )
+
             console.print(tree)
 
     console.print("\n🏁 [bold green]Code Fix Concluded![/bold green]")
     passing_methods = env.state.get("passing_methods", {})
     if isinstance(passing_methods, dict):
         for agent_id, progress in passing_methods.items():
-            console.print(f"  [cyan]{agent_id}[/cyan] fixed: [bold green]{progress}[/bold green]")
+            console.print(
+                f"  [cyan]{agent_id}[/cyan] fixed: [bold green]{progress}[/bold green]"
+            )

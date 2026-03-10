@@ -5,6 +5,7 @@ Agents are placed in an environment with limited tokens.
 Every turn an agent must 'consume' a token to survive.
 If an agent runs out of tokens, they die (are removed from the game).
 """
+
 import random
 from typing import Any, Dict
 
@@ -50,7 +51,7 @@ class TokenHeistEnvironment(Environment):
         """
         if agent is None:
             raise ValueError("Agent cannot be None.")
-            
+
         super().register_agent(agent)
         agent.resources["token"] = self.starting_tokens
         self.resource_ledger[agent.agent_id]["token"] = self.starting_tokens
@@ -64,18 +65,18 @@ class TokenHeistEnvironment(Environment):
 
         Returns:
             A dictionary containing the state visible to the agent.
-            
+
         Raises:
             KeyError: If the agent_id is not found in the environment.
         """
         if agent_id not in self.agents:
             raise KeyError(f"Agent {agent_id} not found in environment.")
-            
+
         view = super().get_agent_view(agent_id)
-        
+
         dead_agents = self.state.get("dead_agents", [])
         turn_number = self.state.get("turn_number", 0)
-        
+
         if isinstance(view.get("global_state"), dict):
             view["global_state"]["dead_agents"] = dead_agents
             view["global_state"]["turn_number"] = turn_number
@@ -114,7 +115,11 @@ class TokenHeistEnvironment(Environment):
         Returns:
             True if the theft was successful, False otherwise.
         """
-        if not isinstance(thief_id, str) or not isinstance(victim_id, str) or not isinstance(resource_key, str):
+        if (
+            not isinstance(thief_id, str)
+            or not isinstance(victim_id, str)
+            or not isinstance(resource_key, str)
+        ):
             return False
 
         dead_agents = self.state.get("dead_agents", [])
@@ -167,13 +172,15 @@ class TokenHeistEnvironment(Environment):
     async def step(self) -> None:
         """
         Execute a single simulation step.
-        
+
         Overridden step to handle token consumption and dead agents.
         """
         current_turn = self.state.get("turn_number", 0)
         if isinstance(current_turn, int):
             self.state["turn_number"] = current_turn + 1
-            setattr(self, "turn_number", self.state["turn_number"])  # For the logger hook
+            setattr(
+                self, "turn_number", self.state["turn_number"]
+            )  # For the logger hook
 
         self._pre_step()
 
@@ -181,10 +188,8 @@ class TokenHeistEnvironment(Environment):
         dead_agents = self.state.get("dead_agents", [])
         if not isinstance(dead_agents, list):
             dead_agents = []
-            
-        active_ids = [
-            k for k in self.agents.keys() if k not in dead_agents
-        ]
+
+        active_ids = [k for k in self.agents.keys() if k not in dead_agents]
 
         await self._run_agent_actions(active_ids)
 
@@ -199,11 +204,11 @@ class TokenHeistEnvironment(Environment):
             else:
                 agent.resources["token"] = 0
                 self.resource_ledger[agent_id]["token"] = 0
-                
+
                 if not isinstance(self.state.get("dead_agents"), list):
                     self.state["dead_agents"] = []
                 self.state["dead_agents"].append(agent_id)
-                
+
                 self.history.append(
                     {
                         "type": "death",

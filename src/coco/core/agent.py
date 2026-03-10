@@ -1,6 +1,7 @@
 """Module containing the core Agent implementation."""
+
 import json
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import litellm
 
@@ -206,7 +207,7 @@ class Agent:
         results = self._vector_collection.query(
             query_embeddings=[query_embedding], n_results=self.memory_config.top_k
         )
-        
+
         # Results from chromadb query usually return lists of lists.
         # We fetch the first list of documents.
         if "documents" not in results or not results["documents"]:
@@ -298,7 +299,9 @@ Example JSON action format (for core actions):
             response = await litellm.acompletion(
                 model=self.model,
                 messages=messages,
-                response_format={"type": "json_object"} if "gpt" in self.model else None,
+                response_format={"type": "json_object"}
+                if "gpt" in self.model
+                else None,
                 temperature=0.7,
             )
 
@@ -329,7 +332,7 @@ Example JSON action format (for core actions):
             return {"action_type": "pass", "error": str(e)}
 
     async def share(
-        self, target_agent_id: str, resource_key: str, environment: 'Environment'
+        self, target_agent_id: str, resource_key: str, environment: "Environment"
     ) -> bool:
         """Shares a resource with another agent.
 
@@ -351,7 +354,7 @@ Example JSON action format (for core actions):
         return False
 
     async def steal(
-        self, target_agent_id: str, resource_key: str, environment: 'Environment'
+        self, target_agent_id: str, resource_key: str, environment: "Environment"
     ) -> bool:
         """Attempts to steal a resource from another agent.
 

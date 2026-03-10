@@ -9,7 +9,9 @@ app = typer.Typer(help="CoCo - Collaborate || Compete CLI")
 
 @app.command()
 def sim(
-    export: bool = typer.Option(False, "--export", help="Export simulation logs to JSON.")
+    export: bool = typer.Option(
+        False, "--export", help="Export simulation logs to JSON."
+    ),
 ) -> None:
     """Run the default Token Heist evolutionary simulation."""
     from coco.tasks.runners import run_token_heist_evolution

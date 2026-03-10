@@ -1,16 +1,17 @@
 """Module for managing the evolutionary lifecycle of agents.
 
-This module provides the EvolutionaryEngine class, which handles population 
+This module provides the EvolutionaryEngine class, which handles population
 initialization, fitness evaluation, culling, and breeding across generations.
 """
+
 import random
-from typing import Any, Dict, List, Optional, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Optional, Type
 
 from coco.core.agent import Agent, AgentTraits, MemoryConfig
 
 if TYPE_CHECKING:
-    from coco.core.environment import Environment
     from coco.core.database import DataManager
+    from coco.core.environment import Environment
 
 
 class EvolutionaryEngine:
@@ -36,13 +37,13 @@ class EvolutionaryEngine:
 
     def __init__(
         self,
-        environment_class: Type['Environment'],
+        environment_class: Type["Environment"],
         population_size: int = 10,
         survival_rate: float = 0.5,
         mutation_rate: float = 0.1,
         mutation_step: float = 0.2,
         model: str = "gpt-3.5-turbo",
-        data_manager: Optional['DataManager'] = None,
+        data_manager: Optional["DataManager"] = None,
         simulation_id: Optional[int] = None,
         memory_config: Optional[MemoryConfig] = None,
     ) -> None:
@@ -190,7 +191,7 @@ class EvolutionaryEngine:
         """Advances the population to the next generation.
 
         Sorts the current population by fitness, kills the bottom percentage
-        according to the survival_rate, and breeds the survivors to fill 
+        according to the survival_rate, and breeds the survivors to fill
         the population back to its target size. Also logs generation stats.
         """
         # Sort by fitness descending

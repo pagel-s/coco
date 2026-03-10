@@ -25,13 +25,16 @@ async def test_agent_vector_memory(mock_completion, mock_embedding) -> None:
         mock_embedding.return_value = AsyncMock(
             data=[AsyncMock(embedding=[0.1, 0.2, 0.3])]
         )
-        
+
         mock_completion.return_value = AsyncMock(
             choices=[
                 AsyncMock(
                     message=AsyncMock(
                         content=json.dumps(
-                            {"action_type": "pass", "reasoning": "I am testing vector memory."}
+                            {
+                                "action_type": "pass",
+                                "reasoning": "I am testing vector memory.",
+                            }
                         )
                     )
                 )
