@@ -29,6 +29,13 @@ coco = "coco.cli:app"
 coco-sim = "coco.cli:sim"
 coco-dash = "coco.cli:dashboard"
 
+[tool.uv]
+managed = true
+
+[tool.uv.scripts]
+lint = "ruff check . && ruff format --check . && mypy --strict src"
+fix = "ruff check . --fix && ruff format ."
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
@@ -78,3 +85,8 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 mypy_path = "src"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.5.1",
+]
