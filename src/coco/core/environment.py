@@ -1,37 +1,78 @@
+"""Module containing the core Environment implementation."""
 import asyncio
-from typing import Any, Dict, List, Optional
+import random
+from typing import Any, Dict, List, Optional, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from coco.core.agent import Agent
 
 
 class Environment:
+    """The central state manager for the simulation.
+
+    Handles agent registration, resource management, and execution of agent actions.
+
+    Attributes:
+        state: A dictionary representing the true global state.
+        agents: A dictionary of all registered agents by their IDs.
+        resource_ledger: A dictionary mapping agent IDs to their resources.
+        history: A list of executed actions in chronological order.
+        data_manager: An optional database manager for logging events.
+        simulation_id: An optional integer identifying the simulation.
+        current_turn_id: The identifier of the currently active turn.
+    """
+
     def __init__(
         self, data_manager: Optional[Any] = None, simulation_id: Optional[int] = None
     ) -> None:
-        # The true state of the world
+        """Initializes an Environment instance.
+
+        Args:
+            data_manager: An optional object to manage SQLite logging.
+            simulation_id: Optional numerical ID for tracking simulations.
+        """
         self.state: Dict[str, Any] = {}
-
-        # Registry of active agents
-        self.agents: Dict[str, Any] = {}
-
-        # Track what resources are owned by whom.
+        self.agents: Dict[str, 'Agent'] = {}
         self.resource_ledger: Dict[str, Dict[str, Any]] = {}
-
-        # Log of all actions taken in the environment
         self.history: List[Dict[str, Any]] = []
 
-        # SQLite logging
         self.data_manager = data_manager
         self.simulation_id = simulation_id
         self.current_turn_id: Optional[int] = None
 
-    def register_agent(self, agent: Any) -> None:
+    def register_agent(self, agent: 'Agent') -> None:
+        """Registers a new agent into the environment.
+
+        Args:
+            agent: The Agent instance to add.
+
+        Raises:
+            ValueError: If the agent is already registered.
+        """
+        if agent.agent_id in self.agents:
+            raise ValueError(f"Agent with ID '{agent.agent_id}' is already registered.")
+
         self.agents[agent.agent_id] = agent
         self.resource_ledger[agent.agent_id] = {}
 
-        # Log agent to database if manager is present
         if self.data_manager and self.simulation_id is not None:
             self.data_manager.log_agent(self.simulation_id, agent)
 
     def get_agent_view(self, agent_id: str) -> Dict[str, Any]:
+        """Provides an agent-specific view of the environment.
+
+        Args:
+            agent_id: The identifier of the agent requesting the view.
+
+        Returns:
+            A dictionary containing the global state and visible agents.
+
+        Raises:
+            KeyError: If the agent is not registered.
+        """
+        if agent_id not in self.agents:
+            raise KeyError(f"Agent with ID '{agent_id}' is not registered.")
+
         return {
             "global_state": self.state,
             "other_agents": [aid for aid in self.agents.keys() if aid != agent_id],
@@ -40,6 +81,16 @@ class Environment:
     async def transfer_resource(
         self, source_id: str, target_id: str, resource_key: str
     ) -> bool:
+        """Transfers a resource from one agent to another.
+
+        Args:
+            source_id: ID of the sender agent.
+            target_id: ID of the receiver agent.
+            resource_key: Identifier of the resource to be transferred.
+
+        Returns:
+            A boolean indicating if the transfer succeeded.
+        """
         if source_id not in self.agents or target_id not in self.agents:
             return False
 
@@ -58,16 +109,24 @@ class Environment:
     async def attempt_theft(
         self, thief_id: str, victim_id: str, resource_key: str
     ) -> bool:
+        """Attempts a randomized theft of a resource between two agents.
+
+        Args:
+            thief_id: ID of the agent attempting to steal.
+            victim_id: ID of the agent being stolen from.
+            resource_key: Identifier of the target resource.
+
+        Returns:
+            A boolean indicating whether the theft succeeded.
+        """
         if thief_id not in self.agents or victim_id not in self.agents:
             return False
 
         victim_agent = self.agents[victim_id]
-
         if resource_key not in victim_agent.resources:
             return False
 
-        import random
-
+        # 50% chance to succeed
         success = random.random() > 0.5
 
         if success:
@@ -82,6 +141,18 @@ class Environment:
         return False
 
     async def execute_action(self, agent_id: str, action: Dict[str, Any]) -> None:
+        """Executes an action proposed by an agent.
+
+        Args:
+            agent_id: ID of the agent performing the action.
+            action: A dictionary detailing the action type and parameters.
+
+        Raises:
+            ValueError: If the action is invalid or not actionable.
+        """
+        if not action or not isinstance(action, dict):
+            raise ValueError("action must be a non-empty dictionary.")
+
         action_type = action.get("action_type")
         success = False
 
@@ -115,10 +186,21 @@ class Environment:
             )
 
     async def handle_custom_action(self, agent_id: str, action: Dict[str, Any]) -> bool:
+        """Handles actions that are not standard (e.g. not steal/share/pass).
+
+        Designed to be overridden by subclasses.
+
+        Args:
+            agent_id: The ID of the agent performing the action.
+            action: The dictionary defining the action.
+
+        Returns:
+            A boolean indicating success. Defaults to False.
+        """
         return False
 
     def _pre_step(self) -> None:
-        """Internal hook to log the start of the turn."""
+        """Hook called before the start of each simulation step."""
         if self.data_manager and self.simulation_id is not None:
             generation = getattr(self, "generation", 0)
             turn_number = getattr(self, "turn_number", 0)
@@ -127,16 +209,20 @@ class Environment:
             )
 
     async def _run_agent_actions(self, agent_ids: List[str]) -> None:
-        """Prompts all active agents and executes their choices."""
+        """Gathers and executes the proposed actions for a list of agents.
+
+        Args:
+            agent_ids: List of agent identifiers participating in the current step.
+        """
         tasks = []
         for agent_id in agent_ids:
+            if agent_id not in self.agents:
+                continue
             agent = self.agents[agent_id]
             view = self.get_agent_view(agent_id)
             tasks.append(agent.act(view))
 
         actions = await asyncio.gather(*tasks, return_exceptions=True)
-
-        from typing import cast
 
         for agent_id, action in zip(agent_ids, actions):
             if isinstance(action, Exception):
@@ -144,15 +230,20 @@ class Environment:
                 continue
 
             valid_action = cast(Dict[str, Any], action)
-            await self.execute_action(agent_id, valid_action)
+            try:
+                await self.execute_action(agent_id, valid_action)
+            except Exception as e:
+                print(f"Failed to execute action for agent {agent_id}: {e}")
 
     def _post_step(self) -> None:
-        """Optional hook for environment-specific cleanup/rules."""
+        """Hook called after the completion of each simulation step."""
         pass
 
     async def step(self) -> None:
-        """The standard step workflow."""
+        """Executes a single standard turn for all active agents.
+
+        Invokes _pre_step, queries and applies agent actions, and then calls _post_step.
+        """
         self._pre_step()
-        # By default, all registered agents are active
         await self._run_agent_actions(list(self.agents.keys()))
         self._post_step()
